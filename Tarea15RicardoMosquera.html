@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Ordinario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 50%;
+            border: 2px solid #333;
+            width: 200px;
+            height: 200px;
+        }
+
+        .month-year {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            margin-top: 20px;
+        }
+
+        .day {
+            background: #fff;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .header {
+            font-weight: bold;
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Calendario EXTRAORDINARIO</h1>
+    
+    <!-- Reloj Analógico -->
+    <canvas id="analogClock" width="200" height="200"></canvas>
+
+    <div class="month-year" id="monthYear"></div>
+
+    <div class="calendar" id="calendar">
+        <!-- Días del calendario se insertan con JS -->
+    </div>
+
+    <script>
+        // Función para dibujar el reloj analógico
+        function drawClock() {
+            const canvas = document.getElementById('analogClock');
+            const ctx = canvas.getContext('2d');
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 90;
+
+            const now = new Date();
+            const seconds = now.getSeconds();
+            const minutes = now.getMinutes();
+            const hours = now.getHours();
+
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar borde exterior
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius + 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+
+            // Fondo blanco
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+            // Números del reloj
+            for (let i = 1; i <= 12; i++) {
+                const angle = (i * Math.PI / 6) - Math.PI/2;
+                const x = centerX + Math.cos(angle) * (radius - 15);
+                const y = centerY + Math.sin(angle) * (radius - 15);
+                ctx.font = "14px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(i, x, y);
+            }
+
+            // Manecilla de horas
+            const hourAngle = ((hours % 12) + minutes / 60) * Math.PI / 6;
+            drawHand(ctx, hourAngle, radius * 0.5, 6);
+
+            // Manecilla de minutos
+            const minuteAngle = (minutes + seconds / 60) * Math.PI / 30;
+            drawHand(ctx, minuteAngle, radius * 0.7, 4);
+
+            // Manecilla de segundos
+            const secondAngle = seconds * Math.PI / 30;
+            drawHand(ctx, secondAngle, radius * 0.8, 2, 'red');
+        }
+
+        // Función auxiliar para dibujar manecillas
+        function drawHand(ctx, angle, length, width, color = '#333') {
+            const centerX = ctx.canvas.width / 2;
+            const centerY = ctx.canvas.height / 2;
+
+            ctx.beginPath();
+            ctx.lineWidth = width;
+            ctx.strokeStyle = color;
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(
+                centerX + Math.cos(angle) * length,
+                centerY + Math.sin(angle) * length
+            );
+            ctx.stroke();
+        }
+
+        // Actualizar reloj cada segundo
+        setInterval(drawClock, 1000);
+        drawClock(); // Llamada inicial
+
+        // Calendario mensual
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('monthYear');
+            calendar.innerHTML = '';
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0 = Enero
+            const firstDay = new Date(year, month, 1).getDay(); // Día de la semana
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'day header';
+                header.textContent = day;
+                calendar.appendChild(header);
+            });
+
+            // Espacios vacíos al inicio
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'day';
+                calendar.appendChild(emptyCell);
+            }
+
+            // Días del mes
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day';
+                dayCell.textContent = day;
+                calendar.appendChild(dayCell);
+            }
+
+            const monthNames = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+
+            monthYear.textContent = `${monthNames[month]} ${year}`;
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
